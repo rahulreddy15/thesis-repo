@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p><strong>Pending Transactions</strong></p>
+{% if transactions %}
+{% for transaction in transactions %}
+<pre><code>
+    Sender: {{ transaction.sender }}
+    Receiver: {{ transaction.receiver }}
+    Amount: {{ transaction.amount }}
+</code></pre>
+{% endfor %}
+<form action="" method="POST">
+    <button>Mine</button>
+</form>
+{% else %}
+<p style="color: red;">No transactions available to mine.</p>
+{% endif %}
+{% endblock content %}

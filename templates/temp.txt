@@ -1,0 +1,102 @@
+{% extends 'base_new.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card" style="min-width: 70vw;">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <div class="card-header" style="display: flexbox;">
+            <h2 class="mr-auto" style="display: inline-block;">Blockchain</h2>
+            <form action="" method="POST" style="float: right;">
+                <button type="submit" class="btn btn-dark">Update Blockchain</button>
+            </form>
+        </div>
+        <div class="card-body">
+            <table id="dtBasicExample" class="table table-striped table-lg" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+                  <th class="th-sm">#</th>
+                  <th class="th-sm">Transactions</th>
+                  <th class="th-sm">Hash</th>
+                  <th class="th-sm">Previous Hash</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for block in blockchain.chain|reverse %}
+                <tr>
+                  <td>{{ block.index }}</td>
+                  <td>
+                    {% if block.transactions %}
+                        {% for transaction in block.transactions %}
+                        <p>
+                            {{ transaction.sender_name }} - {{ transaction.sender|truncate(10, True, '...') }} --> {{ transaction.receiver_name }} - {{ transaction.receiver|truncate(10, True, '...') }} --> {{ transaction.amount}}
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                    -
+                    {% endif %}
+                  </td>
+                  <td>
+                    {{ block.hash|truncate(45, True, '...') }}
+                  </td>
+                  <td>
+                    {{ block.previous_hash|truncate(20, True, '...') }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <!-- <tfoot>
+                <tr>
+                  <th>#</th>
+                  <th>Transactions</th>
+                  <th>Hash</th>
+                  <th>Previous Hash</th>
+                </tr>
+              </tfoot> -->
+            </table>
+        </div>
+        {% for block in blockchain.chain|reverse %}
+        <div class="card">
+          <div class="card-header">
+            {{ block.index }}
+          </div>
+          <ul class="list-group list-group-flush">
+            {% if block.transactions %}
+                        {% for transaction in block.transactions %}
+                        <li class="list-group-item">
+                          <p>
+                            Transaction Sender: {{ transaction.sender_name }} - {{ transaction.sender|truncate(10, True, '...') }}
+                          </p>
+                          <p>
+                            Transaction Reciever: {{ transaction.receiver_name }} - {{ transaction.receiver|truncate(10, True, '...') }}
+                          </p>
+                          <p>
+                            Transaction Amount: {{ transaction.amount }}
+                          </p>
+                        </li>                      
+                        {% endfor %}
+                    {% else %}
+                    <li class="list-group-item">
+                      <l1 class="list-group-item">
+                        <p>No Transactions</p>
+                      </l1>
+                    </li>
+                    {% endif %}
+          </ul>
+
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}
+
+
+30819f300d06092a864886f70d010101050003818d0030818902818100b0706240f958134d5bda60993db2737216ac5277fe7b15829f4e376199ce395b75bed978f5254ec2d0f91d7606174856c8df2e0329bf81222c28e5549ff57982b4006c294d3487623135bd16ca00ff79963b78bd08d7f9111d5bf9170ca72d52e86e678b29233cfb9995a6894555c91848042b6f8450ddedbc04fd4822eb21650203010001
+3082025c02010002818100b0706240f958134d5bda60993db2737216ac5277fe7b15829f4e376199ce395b75bed978f5254ec2d0f91d7606174856c8df2e0329bf81222c28e5549ff57982b4006c294d3487623135bd16ca00ff79963b78bd08d7f9111d5bf9170ca72d52e86e678b29233cfb9995a6894555c91848042b6f8450ddedbc04fd4822eb2165020301000102818018bd717185e50d33d434df45ad8a87b89028529a03c3738530dc5154acb1e786051121425e3180853db328a7e37bc14775fc21620d290eace17f4c84dcb71975f7e4e0b01aa2611fb801db2ca45834bb3241c11e168ce92f6efdef4784c3106343d8670eed8a023e01683e9d1df38e56a508dc50c17aeebf292f78b1cac3d9e3024100bf6c7e05e824f5dd48e32596ac17de98393ea366d3e2684f3f19cba0a4e0e7bef938c64751515491a724093b8bce7b9a1f6a49169f743ace0d991dffdec8589b024100ebf5caed2911bf828211747bafd9310df6cad88b776a0bef6cc1575cb0ff23b51b4dc910916210875feea76b7d328d0b8355866d4aa9ca4da282296ec0c10dff024018b39e5b92c65a37d0f506dfb79b68ed09ce0c75f377aef032fb582c85ba440d7fc994c49538c289fd20885477c91068260fa818d440c269de9558aab10bf76b0241008a82eb8f524777db1d8d2f8a97cc702e594bf3d7d2ce6e992a8748484222538cb1ad74b50412c3cf23f24d571cd43ad5a24fe72c6ae2c6bdd202845dde4ab5730240333346a9852fca03167bbd0ebe9ab4583a0eab35247d02a58addc2d8df8ab63acc1c458da8426709d17ba6039cdf12458bdb25a20f659b4a2062e854fee6c409

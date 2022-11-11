@@ -1,0 +1,23 @@
+{% extends 'base_new.html' %}
+
+{% block content %}
+<div class="container" style="width: 70vw; margin-left: 3vw; margin-top: 10%">
+    <div class="alert alert-warning" role="alert">
+        Save public and private keys for future use
+    </div>
+    <p style="font-size: 1.2rem;">Your current balance is: {{ wallet.amount }}</p>
+
+    <div class="container">
+        <p>Public Key:
+            <div class="card" style="padding: 10px;">
+                <pre style="overflow: auto; font-size: 1.1rem;"><code>{{ wallet.public_key }}</code></pre>
+            </div>
+        </p>
+        <p>Private Key:
+            <div class="card" style="padding: 10px;">
+                <pre style="overflow: auto; font-size: 1.1rem;"><code>{{ wallet.private_key }}</code></pre>
+            </div>
+        </p>
+    </div>
+</div>
+{% endblock content %}

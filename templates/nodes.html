@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<p style="color: green;">{{ message }}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
+<!-- <form action="" method="POST">
+    <label for="node">Enter a node</label>
+    <input type="url" name="node" id="node" required />
+    <button type="submit">Add</button>
+</form> -->
+
+{% if nodes %}
+<p style="margin-top: 5%;"><strong>Connected Nodes</strong></p>
+<ul>
+    {% for node in nodes %}
+    <li>{{ node.url }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock content %}

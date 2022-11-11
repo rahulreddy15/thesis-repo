@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<article style="margin-top: 0%; margin-left: 15%; width: 75%;">
+    <div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+        <p style="color: red;">{{ message }}</p>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    </div>
+    <div>
+        <h1>Sign in</h1>
+        <form action="" method="POST">
+            <input type="number" name="public-key" placeholder="Public Key" aria-label="Public Key" required>
+            <input type="text" name="private-key" placeholder="Private Key" aria-label="Private Key" required>
+            <button type="submit" class="contrast">Login</button>
+        </form>
+        <form action="/register" method="POST">
+            <button type="submit" class="secondary">Register</button>
+        </form>
+    </div>
+</article>
+{% endblock content %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<p style="color: green;">{{ message }}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<form action="" method="POST">
+    <input type="text" hidden value="{{ my_wallet.public_key }}" name="sender">
+    <label for="transferTo">Transfer To</label>
+    <select id="transferTo" name="receiver">
+        <option value="" disabled selected>Select</option>
+        {% for wallet in wallets %}
+        <option value="{{ wallet.public_key }}">{{ wallet.public_key }}</option>
+        {% endfor %}
+    </select>
+    <label for="amount">Amount</label>
+    <input type="number" name="amount" id="amount" min="1" max="{{ my_wallet.amount }}">
+    <button>Send</button>
+</form>
+
+<h3 style="color:#dd">Transaction History</h3>
+<br>
+<br>
+
+<table>
+  <tr>
+    <th>Sender</th>
+    <th>Receiver</th>
+    <th>Amount</th>
+  </tr>
+    {% for value in Transactions %}
+  <tr>
+    <td>{{ value.sender[:7] }}...</td>
+    <td>{{ value.receiver[:7] }}...</td>
+    <td>{{ value.amount }}</td>
+  </tr>
+    {% endfor %}
+</table>
+{% endblock content %}

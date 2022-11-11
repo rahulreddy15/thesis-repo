@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<p style="color: green;">{{ message }}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+{% if blockchain.chain %}
+<form action="" method="POST">
+    <button>Update Blockchain</button>
+</form>
+{% for block in blockchain.chain %}
+<article style="width: 80%; margin-left: 10%; margin-top: 1%">
+    <header style="padding: 3%;"><strong>Block #{{ block.index }}</strong></header>
+    <pre>
+        <code style="padding: 0%;">
+            timestamp: {{ block.timestamp }}
+            nonce: {{ block.nonce }}
+            transactions: [
+                {% for transaction in block.transactions %}
+                {{ transaction.to_json() }}
+                {% endfor %}
+            ]
+            hash: {{ block.hash }}
+            previous hash: {{ block.previous_hash }}
+            mined_by: {{ block.mined_by }}
+        </code>
+    </pre>
+</article>
+{% endfor %}
+{% endif %}
+{% endblock content %}

@@ -1,0 +1,88 @@
+{% extends 'base_new.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-4">
+    <div class="card" style="width: 60vw; margin-left: 8vw">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-primary" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <div class="card-header">
+            Transfer
+        </div>
+        <div class="card-body mt-4">
+            <form action="" method="POST">
+              <div class="form-group">
+
+                <!-- Hidden Fields -->
+                <input type="text" hidden value="{{ my_wallet.public_key }}" name="sender">
+                <input type="text" hidden value="{{ my_wallet.name }}" name="sender-name">
+                <input type="text" hidden value="" name="receiver-name" id="receiverName">
+
+                <!-- Actual Form -->
+                <label for="transferTo">Transfer To</label>
+                <select required id="transferTo" class="form-control mb-4" name="receiver">
+                    <option value="" disabled selected>Select</option>
+                    {% for wallet in wallets %}
+                    <option value="{{ wallet.public_key }}">
+                        {{ wallet.name }} - {{ wallet.public_key|truncate(100, True, "...") }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <label for="amount">Amount</label>
+                <input required type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount">
+              </div>
+              <button type="submit" class="btn btn-dark">Confirm Transfer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- List of Transactions -->
+<div class="container mt-4" style="padding: 10%">
+    <h3>Transaction History</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Sender/Receiver</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in Transactions|reverse %}
+            <tr>
+                <th scope="row">{{ tx["user"] }} - {{ tx["wallet"]|truncate(25, True, '...') }}</th>
+                <td>{{ tx["amount"] }}</td>
+                <td>{{ tx["status"] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script>
+    const dropDownElement = document.querySelector('#transferTo');
+    const receiverName = document.querySelector('#receiverName');
+    dropDownElement.addEventListener('change', getReceiverName);
+
+    function getReceiverName() {
+        const receiverPublicKey = dropDownElement.value;
+        const wallets = {{ wallets|tojson }};
+
+        for (let i = 0; i < wallets.length; i += 1) {
+            if (wallets[i]['public_key'] == receiverPublicKey) {
+                receiverName.value = wallets[i].name;
+                break;
+            }
+        }
+    }
+</script>
+{% endblock script %}

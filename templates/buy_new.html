@@ -1,0 +1,29 @@
+{% extends 'base_new.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card" style="width: 60vw; margin-left: 8vw">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-primary" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <div class="card-header">
+            Buy
+        </div>
+        <div class="card-body mt-4">
+            <form action="" method="POST">
+              <div class="form-group">
+                <label for="amount">Amount</label>
+                <input type="number" class="form-control" id="amount" name="amount" placeholder="Enter amount">
+              </div>
+              <button type="submit" class="btn btn-dark">Buy</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

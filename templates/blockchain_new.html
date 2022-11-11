@@ -1,0 +1,59 @@
+{% extends 'base_new.html' %} {% block content %}
+<div class="container-fluid mt-4">
+  <div class="card" style="min-width: 70vw">
+    {% with messages = get_flashed_messages() %} {% if messages %} {% for
+    message in messages %}
+    <div class="alert alert-success" role="alert">{{ message }}</div>
+    {% endfor %} {% endif %} {% endwith %}
+    <div class="card-header" style="display: flexbox">
+      <h2 class="mr-auto" style="display: inline-block">Blockchain</h2>
+      <form action="" method="POST" style="float: right">
+        <button type="submit" class="btn btn-dark">Update Blockchain</button>
+      </form>
+    </div>
+    <div class="card-body">
+      {% for block in blockchain.chain|reverse %}
+      <div class="card" style="margin-top: 20px">
+        <div class="card-header">
+          Block Number: {{ block.index }}
+          <br />
+          Hash: {{ block.hash }}
+          <br />
+          Previous Hash: {{ block.previous_hash }}
+          <br />
+          Timestamp: {{ block.timestamp }}
+          <br />
+          Nonce: {{ block.nonce }}
+          {% if block.mined_by %}
+          <br />
+          Mined By: {{ block.mined_by|truncate(60, True, '...') }}
+          {% endif %}
+        </div>
+        <ul class="list-group list-group-flush">
+          {% if block.transactions %} {% for transaction in block.transactions
+          %}
+          <li class="list-group-item">
+            <p>
+              Transaction Sender: {{ transaction.sender_name }} - {{
+              transaction.sender|truncate(60, True, '...') }}
+            </p>
+            <p>
+              Transaction Reciever: {{ transaction.receiver_name }} - {{
+              transaction.receiver|truncate(60, True, '...') }}
+            </p>
+            <p>Transaction Amount: {{ transaction.amount }}</p>
+          </li>
+          {% endfor %} {% else %}
+          <li class="list-group-item">
+            <l1 class="list-group-item">
+              <p>No Transactions</p>
+            </l1>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

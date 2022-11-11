@@ -1,0 +1,45 @@
+{% extends 'base_new.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card" style="min-width: 70vw;">
+        <div class="card-header" style="display: flexbox;">
+            <h2 class="mr-auto" style="display: inline-block;">Pending Transactions</h2>
+            <form action="" method="POST" style="float: right;">
+                <button type="submit" class="btn btn-dark">Mine</button>
+            </form>
+        </div>
+        <div class="card-body">
+          {% if transactions %}
+            <table id="dtBasicExample" class="table table-striped table-lg" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+                  <th class="th-sm">Sender</th>
+                  <th class="th-sm">Receiver</th>
+                  <th class="th-sm">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                  <td>{{ transaction.sender_name }} - {{ transaction.sender|truncate(45, True, '...') }}</td>
+                  <td>{{ transaction.receiver_name }} - {{ transaction.receiver|truncate(45, True, '...') }}</td>
+                  <td>{{ transaction.amount }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <!-- <tfoot>
+                <tr>
+                  <th>Sender</th>
+                  <th>Receiver</th>
+                  <th>Amount</th>
+                </tr>
+              </tfoot> -->
+            </table>
+          {% else %}
+            <p style="color: red;">No transactions available to mine.</p>
+          {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

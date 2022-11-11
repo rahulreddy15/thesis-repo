@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+    <p style="color: green;">{{ message }}</p>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<form action="" method="POST">
+    <label for="amount">Amount</label>
+    <input type="number" name="amount" id="amount">
+    <button type="submit">Buy</button>
+</form>
+{% endblock content %}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <title>#Coin</title>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="container">
+        <ul>
+            <li><strong>#Coin</strong></li>
+        </ul>
+        <ul>
+            <li><a href="/">Blockchain</a></li>
+            <li><a href="/wallet">Wallet</a></li>
+            <!-- <li><a href="/nodes">Nodes</a></li> -->
+            <li><a href="/buy">Buy</a></li>
+            <li><a href="/transaction">Transfer</a></li>
+            <li><a href="/mine_block">Mine</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        {% block content %}
+        {% endblock content %}
+    </main>
+</body>
+</html>
