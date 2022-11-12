@@ -45,3 +45,4 @@ class Blockchain:
 
         block.hash = Block.hash_block(block)
         self.add_block(block)
+        return block

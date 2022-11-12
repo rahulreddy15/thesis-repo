@@ -1,3 +1,4 @@
+import logging
 import time
 import random
 import requests
@@ -23,7 +24,6 @@ parser.add_argument(
 args = parser.parse_args()
 port = args.port
 
-import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
@@ -40,7 +40,7 @@ app.config.update(SESSION_COOKIE_NAME=f'session_{port}')
 client = MongoClient('localhost', 27017)
 
 # Access the db
-db = client['blockchains']
+db = client['blocks']
 
 # Reference to the collections
 transactions = db['transactions']
@@ -182,8 +182,8 @@ def mine_block():
 
     if request.method == 'POST':
         # Send Mining Request To All Nodes
-        print("Started Mining at Time: " + str(time.time()))
-        send_messsage()
+        # print("Started Mining at Time: " + str(time.time()))
+        winner, winner_url, winner_name = send_messsage()
 
         # Get updated blockchain
         blockchain = update_blockchain()
@@ -220,22 +220,22 @@ def mine_block():
                     # Genesis block transaction
                     if reward:
                         nodes.update_one(
-                                {'wallet.public_key': receiver_public_key},
-                                {'$inc': {'wallet.amount': amount}}
-                            )
+                            {'wallet.public_key': receiver_public_key},
+                            {'$inc': {'wallet.amount': amount}}
+                        )
                         transactions.update_one(
-                                {'_id': tx['_id']},
-                                {'$set': {'status': Transaction.STATUS_SUCCESS}},
-                                upsert=False
-                            )
+                            {'_id': tx['_id']},
+                            {'$set': {'status': Transaction.STATUS_SUCCESS}},
+                            upsert=False
+                        )
                         transactions_json = {
-                                'sender': sender_public_key,
-                                'sender_name': sender_name,
-                                'receiver': receiver_public_key,
-                                'receiver_name': receiver_name,
-                                'amount': amount,
-                                'status': Transaction.STATUS_SUCCESS
-                            }
+                            'sender': sender_public_key,
+                            'sender_name': sender_name,
+                            'receiver': receiver_public_key,
+                            'receiver_name': receiver_name,
+                            'amount': amount,
+                            'status': Transaction.STATUS_SUCCESS
+                        }
                         list_of_transactions.append(transactions_json)
                     else:
                         random_number = random.uniform(0, 1)
@@ -312,19 +312,20 @@ def mine_block():
 
             # Mine the block ( important )
 
-            blockchain.mine_block(list_of_transactions,
-                                  session['wallet']['public_key'])
+            latest_block = blockchain.mine_block(list_of_transactions, winner)
             nodes.update_one(
                 {'url': url},
                 {'$set': {'blockchain': blockchain.to_json()}},
                 upsert=False
             )
-            ## Adding Reward
+            send_block_found_message(latest_block.to_json())
+            # Adding Reward
+            
             transaction_json = {
                 'sender': genesis_block_hash,
                 'sender_name': "genesis (mining reward)",
-                'receiver': session["wallet"]["public_key"],
-                'receiver_name': session["username"],
+                'receiver': winner,
+                'receiver_name': winner_name,
                 'amount': float(100),
                 'reward': True
             }
@@ -344,7 +345,7 @@ def mine_block():
     txs = []
     for tx in pending_transactions:
         txs.append(Transaction.from_json(tx))
-    
+
     return render_template('mine_new.html', transactions=txs, current_user=session.get('username'))
 
 
@@ -445,21 +446,36 @@ def buy():
 
     return render_template('buy_new.html', current_user=session.get('username'))
 
+
 @app.route('/start_mining')
 def start_mining():
     print("Started Mining at Time: " + str(time.time()))
-    return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
-@app.route('/end-mining', methods=['GET', 'POST'])
+@app.route('/end_mining', methods=['GET', 'POST'])
 def end_mining():
-
     if request.method == 'POST':
-        winner = request.form.get('winner')
-        block = request.form.get('private-key')
-    
-    pass
+        
+        data = request.get_json(force=True)
+        winner = data['mined_by']
+        session_pubkey=data['public_key']
 
+        if (session_pubkey == winner):
+            print("Hash found at: " + str(time.time()))
+            print("Block: ")
+            print(json.dumps(data, indent=2))
+            print("Block published to all remaining nodes")
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+        else:
+            print("Node: " + winner + "mined the block.")
+            print("Block Recieved at: " + str(time.time()))
+            print(json.dumps(data, indent=2))
+            print("Print Block Verified")
+            print("Block added to Blockchain")
+            return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
+    #return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
 def update_blockchain():
@@ -484,19 +500,20 @@ def validate_transaction(sender, send_amount):
     else:
         return True
 
+
 def find_mining_node(objects, urls):
-    w = random.choice(range(len(objects)+1))
+    w = random.choice(range(len(objects)))
     winner = None
+    winner_name = None
     if w == 0:
-        print("check 1")
         winner = session['wallet']['public_key']
+        winner_name = session['wallet']['name']
     else:
-        print("check 2")
         node_json = nodes.find_one({'_id': ObjectId(objects[urls[w]])})
         winner = node_json['wallet']['public_key']
-        #winner = wallet['public_key']
-    return winner, urls[w]
-    
+        winner_name = node_json['wallet']['name']
+    return winner, urls[w], winner_name
+
 
 def send_messsage():
     wallets = nodes.find({})
@@ -505,13 +522,31 @@ def send_messsage():
     for val in wallets:
         objects[val['url']] = val['_id']
         urls.append(val['url'])
-    winner, winner_url = find_mining_node(objects, urls)
-    print(winner, winner_url)
+    winner, winner_url, winner_name = find_mining_node(objects, urls)
 
     for url in urls:
-        fix = "http://"+url +"/start_mining"
+        fix = "http://"+url + "/start_mining"
         requests.get(fix)
-    return winner, winner_url
+    return winner, winner_url, winner_name
+
+
+def send_block_found_message(latest_block):
+    print(type(latest_block))
+
+    wallets = nodes.find({})
+    objects = {}
+    urls = []
+    for val in wallets:
+        objects[val['url']] = val['_id']
+        urls.append(val['url'])
+    
+    for url in urls:
+        fix = "http://"+url + "/end_mining"
+        node_json = nodes.find_one({'_id': ObjectId(objects[url])})
+        public_key = node_json['wallet']['public_key']
+        latest_block['public_key'] = public_key
+        requests.post(fix, json=latest_block)
+    return
 
 def create_node(url, username):
     # url = request.base_url
