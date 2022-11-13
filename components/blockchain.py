@@ -44,4 +44,5 @@ class Blockchain:
             block.nonce = block.nonce + 1
 
         block.hash = Block.hash_block(block)
+        #
         self.add_block(block)
