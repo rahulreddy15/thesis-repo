@@ -28,7 +28,7 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
-app.secret_key = '12345'
+app.secret_key = '12345678'
 
 app.config.update(SESSION_COOKIE_NAME=f'session_{port}')
 
@@ -40,7 +40,7 @@ app.config.update(SESSION_COOKIE_NAME=f'session_{port}')
 client = MongoClient('localhost', 27017)
 
 # Access the db
-db = client['blocks']
+db = client['blockchainxxx']
 
 # Reference to the collections
 transactions = db['transactions']
@@ -81,7 +81,6 @@ def index():
     blockchain = Blockchain.from_json(blockchain_json)
     return render_template('blockchain_new.html', blockchain=blockchain, current_user=session.get('username'))
 
-
 @app.route('/wallet')
 # @login_required
 def get_wallet_details():
@@ -119,6 +118,8 @@ def transaction():
         receiver = request.form.get('receiver')
         receiver_name = request.form.get('receiver-name')
         amount = request.form.get('amount')
+
+        add_transaction_to_pool()
 
         transaction_json = {
             'sender': sender,
@@ -418,6 +419,8 @@ def buy():
         amount = request.form.get('amount')
         amount = float(amount)
 
+        add_transaction_to_pool()
+
         # Get genesis block hash
         node = nodes.find_one({'_id': ObjectId(session.get('node_id'))})
         chain = node['blockchain']['chain']
@@ -449,7 +452,14 @@ def buy():
 
 @app.route('/start_mining')
 def start_mining():
-    print("Started Mining at Time: " + str(time.time()))
+    print(colored("Message Recieved: START_MINING", 'green'))
+    print(colored("Started Mining at Time: " + str(time.time()), 'blue'))
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
+@app.route('/add_transaction_to_pool')
+def add_transaction_to_pool():
+    print(colored("Message Recieved: ADD_TRANSACTION", 'green'))
+    print(colored("Transaction successfully added to pool", 'blue'))
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
@@ -462,17 +472,16 @@ def end_mining():
         session_pubkey=data['public_key']
 
         if (session_pubkey == winner):
-            print("Hash found at: " + str(time.time()))
-            print("Block: ")
-            print(json.dumps(data, indent=2))
-            print("Block published to all remaining nodes")
+            print(colored("Block: ", 'blue'))
+            print(colored(json.dumps(data, indent=2), 'red'))
+            print(colored("Block sent to all nodes", 'blue'))
             return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
         else:
-            print("Node: " + winner + "mined the block.")
-            print("Block Recieved at: " + str(time.time()))
-            print(json.dumps(data, indent=2))
-            print("Print Block Verified")
-            print("Block added to Blockchain")
+            print(colored("Message Recieved: BLOCK_FOUND", 'green'))
+            print(colored("Node: " + winner + "found the block.", 'blue'))
+            print(colored("Block Recieved At: " + str(time.time()), 'blue'))
+            print(colored(json.dumps(data, indent=2), 'red'))
+            print(colored("Block successfully added to Blockchain", 'blue'))
             return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
     #return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
@@ -526,8 +535,28 @@ def send_messsage():
 
     for url in urls:
         fix = "http://"+url + "/start_mining"
-        requests.get(fix)
+        try:
+            requests.get(fix)
+        except Exception as e:
+            continue
+
     return winner, winner_url, winner_name
+
+def add_transaction_to_pool():
+    wallets = nodes.find({})
+    objects = {}
+    urls = []
+    for val in wallets:
+        objects[val['url']] = val['_id']
+        urls.append(val['url'])
+    for url in urls:
+        fix = "http://"+url + "/add_transaction_to_pool"
+        try:
+            requests.get(fix)
+        except Exception as e:
+            continue
+    return
+    
 
 
 def send_block_found_message(latest_block):
@@ -545,7 +574,10 @@ def send_block_found_message(latest_block):
         node_json = nodes.find_one({'_id': ObjectId(objects[url])})
         public_key = node_json['wallet']['public_key']
         latest_block['public_key'] = public_key
-        requests.post(fix, json=latest_block)
+        try:
+            requests.post(fix, json=latest_block)
+        except Exception as e:
+            continue
     return
 
 def create_node(url, username):
@@ -589,6 +621,11 @@ def create_node(url, username):
     #     node = Node.from_json(node)
 
 
+
+def colored(st, color):
+    return f"\u001b[{30+['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'].index(color)}m{st}\u001b[0m"
+
 if __name__ == '__main__':
     # main()
     app.run(debug=True, port=port)
+
